@@ -18,6 +18,18 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-nav-link :href="route('map.index')" :active="request()->routeIs('map.*')">
+                        {{ __('Map') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-nav-link :href="route('drone-point.index')" :active="request()->routeIs('drone-point.*')">
+                        {{ __('Drone Points') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('center-point.index')" :active="request()->routeIs('center-point.*')">
                         {{ __('Center Point') }}
                     </x-nav-link>
@@ -75,6 +87,24 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('map.index')" :active="request()->routeIs('map.*')">
+                {{ __('Map') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('drone-point.index')" :active="request()->routeIs('frone-point.*')">
+                {{ __('Dront Points') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('center-point.index')" :active="request()->routeIs('center-point.*')">
+                {{ __('Center Point') }}
             </x-responsive-nav-link>
         </div>
 

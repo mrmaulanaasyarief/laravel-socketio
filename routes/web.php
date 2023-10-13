@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CenterPointController;
+use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,10 +29,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/center-point/data',[CenterPointController::class,'data'])->name('center-point.data');
     Route::resource('/center-point', CenterPointController::class);
-    Route::get('/center-point/data',[CenterPointController::class,'data'])->name('centre-point.data');
 
-    Route::resource('/drone-location', CenterPointController::class);
+    Route::get('/drone-point/data',[CenterPointController::class,'data'])->name('drone-point.data');
+    Route::resource('/drone-point', CenterPointController::class);
+
+    Route::get('/map',[MapController::class,'index'])->name('map.index');
 });
 
 require __DIR__.'/auth.php';

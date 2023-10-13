@@ -11,7 +11,7 @@ class UpdateCenterPointRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class UpdateCenterPointRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'latitude'  => ['required'],
+            'longitude' => ['required'],
         ];
     }
 }

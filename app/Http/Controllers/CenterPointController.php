@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCenterPointRequest;
 use App\Http\Requests\UpdateCenterPointRequest;
 use App\Models\CenterPoint;
+use DataTable;
+use Illuminate\Http\Request;
 
 class CenterPointController extends Controller
 {
@@ -21,7 +23,14 @@ class CenterPointController extends Controller
      */
     public function create()
     {
-        //
+        $centrePoint = CenterPoint::count();
+        if ($centrePoint < 1) {
+            # code...
+            return view('center-point.create');
+        } else {
+            return redirect()->route('center-point.index')
+            ->with('abort', 'You can only input 1 data center point, please delete the previous data for new coordinates');
+        }
     }
 
     /**
@@ -29,7 +38,16 @@ class CenterPointController extends Controller
      */
     public function store(StoreCenterPointRequest $request)
     {
-        //
+        $centerPoint = CenterPoint::create([
+            'latitude'       => $request->latitude,
+            'longitude'      => $request->longitude,
+        ]);
+
+        if ($centerPoint) {
+            return redirect()->route('center-point.index')->with('success', 'Center point is created');
+        } else {
+            return redirect()->route('center-point.index')->with('error', 'Center point failed to save');
+        }
     }
 
     /**
@@ -45,7 +63,7 @@ class CenterPointController extends Controller
      */
     public function edit(CenterPoint $centerPoint)
     {
-        //
+        return view('center-point.edit', compact('centerPoint'));
     }
 
     /**
@@ -53,7 +71,13 @@ class CenterPointController extends Controller
      */
     public function update(UpdateCenterPointRequest $request, CenterPoint $centerPoint)
     {
-        //
+        $centerPoint->update($request->all());
+
+        if ($centerPoint) {
+            return redirect()->route('center-point.index')->with('success', 'Center point is updated');
+        } else {
+            return redirect()->route('center-point.index')->with('error', 'Center point failed to Updated');
+        }
     }
 
     /**
@@ -61,15 +85,22 @@ class CenterPointController extends Controller
      */
     public function destroy(CenterPoint $centerPoint)
     {
-        //
+        $centerPoint->delete();
+
+        if ($centerPoint) {
+            return redirect()->route('center-point.index')->with('success', 'Center point is deleted');
+        } else {
+            return redirect()->route('center-point.index')->with('error', 'Center point failed to delete');
+        }
     }
 
     // Display data for Datatables
     public function data()
     {
-        $centrepoint = CenterPoint::orderBy('created_at', 'DESC');
-        return datatable()->of($centrepoint)
-            ->addColumn('action', 'centrepoint.action')
+        $centerPoint = CenterPoint::orderBy('created_at', 'DESC');
+
+        return datatables()->of($centerPoint)
+            ->addColumn('action', 'center-point.action')
             ->addIndexColumn()
             ->rawColumns(['action'])
             ->toJson();
