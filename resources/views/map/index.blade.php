@@ -32,6 +32,38 @@
                         </style>
                         <div id="map"></div>
                     </div>
+                    <div class="flex h-[30%] justify-between p-[1rem]">
+                        <div class="flex flex-col">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-[15px] font-[600] uppercase">Speedometer</h5>
+                                <canvas id="speedo"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-[15px] font-[600] uppercase">Accelerometer</h5>
+                                <canvas id="acl"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-[15px] font-[600] uppercase">Gyro</h5>
+                                <div id="gyro"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-[15px] font-[600] uppercase">COMPAS</h5>
+                                <canvas id="compas"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-[15px] font-[600] uppercase">Altimeter</h5>
+                                <canvas id="altmeter"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,6 +196,171 @@
                 // zoom the map to the polyline
                 map.fitBounds(polyline.getBounds());
             });
+
+            // GAUGE
+            var compas = new RadialGauge({
+            renderTo: 'compas',
+            minValue: 0,
+            height: 225,
+            width: 175,
+            maxValue: 360,
+            majorTicks: [
+                "N",
+                "NE",
+                "E",
+                "SE",
+                "S",
+                "SW",
+                "W",
+                "NW",
+                "N"
+            ],
+            minorTicks: 22,
+            ticksAngle: 360,
+            startAngle: 180,
+            strokeTicks: false,
+            highlights: false,
+            colorPlate: "transparent",
+            colorMajorTicks: "#9eabec",
+            colorMinorTicks: "#ddd",
+            colorNumbers: "#ccc",
+            colorNeedle: "#121c47",
+            colorNeedleEnd: "#9eabec",
+            valueBox: false,
+            valueTextShadow: false,
+            colorCircleInner: "#fff",
+            colorNeedleCircleOuter: "#ccc",
+            needleCircleSize: 15,
+            needleCircleOuter: false,
+            animationRule: "linear",
+            needleType: "arrow",
+            needleStart: 30,
+            needleEnd: 50,
+            needleWidth: 3,
+            borders: true,
+            borderInnerWidth: 0,
+            borderMiddleWidth: 0,
+            borderOuterWidth: 10,
+            colorBorderOuter: "#ccc",
+            colorBorderOuterEnd: "#ccc",
+            colorNeedleShadowDown: "#222",
+            borderShadowWidth: 0,
+            animationTarget: "plate",
+            animationDuration: 1500,
+            value: 0,
+            animateOnInit: true
+        }).draw();
+        var acl = new RadialGauge({
+            renderTo: 'acl',
+            minValue: 0,
+            maxValue: 8,
+            height: 225,
+            width: 175,
+            majorTicks: [
+                "3",
+                "4",
+                "5",
+                "-2",
+                "-1",
+                "0",
+                "1",
+                "2",
+                "3"
+            ],
+            minorTicks: 5,
+            ticksAngle: 360,
+            startAngle: 180,
+            strokeTicks: false,
+            highlights: false,
+            colorPlate: "transparent",
+            colorMajorTicks: "#f5f5f5",
+            colorMinorTicks: "#ddd",
+            colorNumbers: "#ccc",
+            colorNeedle: "#121c47",
+            colorNeedleEnd: "#9eabec",
+            valueBox: false,
+            valueTextShadow: false,
+            colorCircleInner: "#fff",
+            colorNeedleCircleOuter: "#ccc",
+            needleCircleSize: 15,
+            needleCircleOuter: false,
+            animationRule: "linear",
+            needleType: "arrow",
+            needleStart: 30,
+            needleEnd: 50,
+            needleWidth: 3,
+            borders: true,
+            borderInnerWidth: 0,
+            borderMiddleWidth: 0,
+            borderOuterWidth: 10,
+            colorBorderOuter: "#ccc",
+            colorBorderOuterEnd: "#ccc",
+            colorNeedleShadowDown: "#222",
+            borderShadowWidth: 0,
+            animationDuration: 1500,
+            value: 0 + 5,
+            animateOnInit: true
+        }).draw();
+        var altmeter = new LinearGauge({
+            renderTo: 'altmeter',
+            width: 125,
+            minValue: 0,
+            maxValue: 400,
+            borders: false,
+            majorTicks: [
+                "0",
+                "100",
+                "200",
+                "300",
+                "400",
+            ],
+            colorPlate: 'transparent',
+            colorNumbers: "#FFFFFF",
+            colorNeedle: "#9eabec",
+            colorNeedleEnd: "#9eabec",
+            height: 225,
+        }).draw();
+        var gauge = new RadialGauge({
+            renderTo: 'speedo',
+            width: 175,
+            height: 225,
+            units: "Km/h",
+            minValue: 0,
+            maxValue: 220,
+            majorTicks: [
+                "0",
+                "20",
+                "40",
+                "60",
+                "80",
+                "100",
+                "120",
+                "140",
+                "160",
+                "180",
+                "200",
+                "220"
+            ],
+            minorTicks: 5,
+            strokeTicks: true,
+            colorPlate: "transparent",
+            colorMajorTicks: "#FFFFFF",
+            colorMinorTicks: "#FFFFFF",
+            colorNumbers: "#FFFFFF",
+            borderShadowWidth: 0,
+            colorNeedle: "#121c47",
+            colorNeedleEnd: "#9eabec",
+            borders: false,
+            needleType: "arrow",
+            needleWidth: 4,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: false,
+            animationDuration: 1500,
+            animationRule: "dequint",
+            animatedValue: true,
+            animateOnInit: true
+        }).draw();
 
         });
     </script>

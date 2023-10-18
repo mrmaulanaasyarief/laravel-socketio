@@ -16,6 +16,7 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
+        "canvas-gauges": "^2.1.7",
         "laravel-echo": "^1.15.3",
         "socket.io-client": "^4.7.2"
     }
