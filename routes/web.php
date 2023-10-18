@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\MessageCreated;
 use App\Http\Controllers\CenterPointController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('message/created', function () {
+    MessageCreated::dispatch('Lorem ipsum dolor sit amet');
 });
 
 Route::get('/dashboard', function () {
