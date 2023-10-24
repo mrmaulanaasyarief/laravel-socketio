@@ -31,12 +31,6 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
 });
 
-window.Echo.channel("messages").listen("MessageCreated", (event) => {
-    console.log("berhasil listen ke pusher");
-
-    console.log(event);
-});
-
 // import Echo from "laravel-echo";
 
 // window.io = require('socket.io-client');

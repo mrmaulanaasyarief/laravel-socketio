@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageCreated;
 use App\Http\Requests\StoreTelemetriLogRequest;
 use App\Http\Requests\UpdateTelemetriLogRequest;
 use App\Models\TelemetriLog;
@@ -22,6 +23,8 @@ class TelemetriLogController extends Controller
     public function store(StoreTelemetriLogRequest $request)
     {
         $telemetriLog = TelemetriLog::create($request->all());
+
+        MessageCreated::dispatch($telemetriLog);
 
         return response()->json($telemetriLog, 201);
     }

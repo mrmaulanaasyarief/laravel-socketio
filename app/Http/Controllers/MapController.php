@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CenterPoint;
+use App\Models\TelemetriLog;
 use Illuminate\Http\Request;
 
 class MapController extends Controller
@@ -13,7 +14,8 @@ class MapController extends Controller
     public function index()
     {
         $centerPoint = CenterPoint::get()->first();
-        return view('map.index', compact('centerPoint'));
+        $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
+        return view('map.index', compact('centerPoint', 'telemetriLogs'));
     }
 
 }

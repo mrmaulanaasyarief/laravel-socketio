@@ -4,7 +4,6 @@
             {{ __('Map') }}
         </h2>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -80,6 +79,168 @@
     </script>
     <script>
         $(function(){
+
+            // GAUGE
+            var compas = new RadialGauge({
+                renderTo: 'compas',
+                minValue: -180,
+                height: 225,
+                width: 175,
+                maxValue: 180,
+                majorTicks: [
+                    "N",
+                    "NE",
+                    "E",
+                    "SE",
+                    "S",
+                    "SW",
+                    "W",
+                    "NW",
+                    "N"
+                ],
+                minorTicks: 22,
+                ticksAngle: 360,
+                startAngle: 0,
+                strokeTicks: false,
+                highlights: false,
+                colorPlate: "transparent",
+                colorMajorTicks: "#9eabec",
+                colorMinorTicks: "#ddd",
+                colorNumbers: "#ccc",
+                colorNeedle: "#121c47",
+                colorNeedleEnd: "#9eabec",
+                valueBox: false,
+                valueTextShadow: false,
+                colorCircleInner: "#fff",
+                colorNeedleCircleOuter: "#ccc",
+                needleCircleSize: 15,
+                needleCircleOuter: false,
+                animationRule: "linear",
+                needleType: "arrow",
+                needleStart: 30,
+                needleEnd: 50,
+                needleWidth: 3,
+                borders: true,
+                borderInnerWidth: 0,
+                borderMiddleWidth: 0,
+                borderOuterWidth: 10,
+                colorBorderOuter: "#ccc",
+                colorBorderOuterEnd: "#ccc",
+                colorNeedleShadowDown: "#222",
+                borderShadowWidth: 0,
+                animationTarget: "plate",
+                animationDuration: 1500,
+                value: 0,
+                animatedValue: true,
+            }).draw();
+            var acl = new RadialGauge({
+                renderTo: 'acl',
+                minValue: 0,
+                maxValue: 8,
+                height: 225,
+                width: 175,
+                majorTicks: [
+                    "3",
+                    "4",
+                    "5",
+                    "-2",
+                    "-1",
+                    "0",
+                    "1",
+                    "2",
+                    "3"
+                ],
+                minorTicks: 5,
+                ticksAngle: 360,
+                startAngle: 180,
+                strokeTicks: false,
+                highlights: false,
+                colorPlate: "transparent",
+                colorMajorTicks: "#f5f5f5",
+                colorMinorTicks: "#ddd",
+                colorNumbers: "#ccc",
+                colorNeedle: "#121c47",
+                colorNeedleEnd: "#9eabec",
+                valueBox: false,
+                valueTextShadow: false,
+                colorCircleInner: "#fff",
+                colorNeedleCircleOuter: "#ccc",
+                needleCircleSize: 15,
+                needleCircleOuter: false,
+                animationRule: "linear",
+                needleType: "arrow",
+                needleStart: 30,
+                needleEnd: 50,
+                needleWidth: 3,
+                borders: true,
+                borderInnerWidth: 0,
+                borderMiddleWidth: 0,
+                borderOuterWidth: 10,
+                colorBorderOuter: "#ccc",
+                colorBorderOuterEnd: "#ccc",
+                colorNeedleShadowDown: "#222",
+                borderShadowWidth: 0,
+                animationDuration: 1500,
+                value: 0 + 5,
+                animatedValue: true,
+            }).draw();
+            var altmeter = new LinearGauge({
+                renderTo: 'altmeter',
+                width: 100,
+                minValue: 0,
+                maxValue: 20000,
+                units: "meter",
+                borders: false,
+                majorTicks: [
+                    "0",
+                    "5000",
+                    "10000",
+                    "15000",
+                    "20000"
+                ],
+                colorPlate: 'transparent',
+                colorNumbers: "#FFFFFF",
+                colorNeedle: "#9eabec",
+                colorNeedleEnd: "#9eabec",
+                height: 225,
+                animatedValue: true,
+            }).draw();
+            var gauge = new RadialGauge({
+                renderTo: 'speedo',
+                width: 175,
+                height: 225,
+                units: "Km/h",
+                minValue: 0,
+                maxValue: 10,
+                majorTicks: [
+                    "0",
+                    "20",
+                    "40",
+                    "60",
+                    "80",
+                    "100"
+                ],
+                minorTicks: 5,
+                strokeTicks: true,
+                colorPlate: "transparent",
+                colorMajorTicks: "#f5f5f5",
+                colorMinorTicks: "#ddd",
+                colorNumbers: "#ccc",
+                borderShadowWidth: 0,
+                colorNeedle: "#121c47",
+                colorNeedleEnd: "#9eabec",
+                borders: false,
+                needleType: "arrow",
+                needleWidth: 4,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 1500,
+                animationRule: "dequint",
+                animatedValue: true,
+                // animateOnInit: true
+            }).draw();
+
             // Menambah attribut pada leaflet
             var mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
                 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -154,7 +315,7 @@
             // menambahkan titik koordinat latitude dan longitude peta indonesia kedalam opsi center
             // mengatur zoom map dan mengatur layer yang akan digunakan
             var map = L.map('map', {
-                center: [{{ $centerPoint->latitude }},{{ $centerPoint->longitude }}],
+                center: [{{ (!empty($centerPoint->latitude) ? $centerPoint->latitude : -6.967512300523178) }},{{ (!empty($centerPoint->longitude) ? $centerPoint->longitude : 107.65906856904034) }}],
                 zoom: 15,
                 layers: [streets]
             });
@@ -162,8 +323,6 @@
             //Menambahkan beberapa layer ke dalam peta/map
             L.control.layers(baseLayers, overlays).addTo(map);
 
-            // set current location / lokasi sekarang dengan koordinat peta indonesia
-            // var curLocation = [{{ $centerPoint->latitude }},{{ $centerPoint->longitude }}];
             map.attributionControl.setPrefix(false);
 
             // set marker map agar bisa di geser
@@ -173,194 +332,35 @@
             // map.addLayer(marker);
 
             // create a red polyline from an array of LatLng points
-            // var latlngs = [
-            //     [-6.952226396233895,107.62005865573883],
-            //     [-6.952434070241399,107.6193505525589],
-            //     [-6.9529399424396665,107.61891067028047],
-            //     [-6.953248790461353,107.61865317821503],
-            //     [-6.95362153780333,107.61837422847749],
-            //     [-6.954015584671849,107.61800944805147],
-            //     [-6.954500155367788,107.61654496192934]
-            // ];
+            var loc = [];
+            @foreach($telemetriLogs as $telemetriLog )
+                loc.push(['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}']);
+                altmeter.value = {{ $telemetriLog->alt }}/10;
+                gauge.value = {{ $telemetriLog->sog }};
+                compas.value = Math.atan2({{ $telemetriLog->my }}, {{ $telemetriLog->mx }}) * 180 / Math.PI;
+            @endforeach
 
-            // connect ke server node.js
-            let socket = io('http://localhost:3000');
-            socket.on('connection');
+            var polyline = L.polyline(loc, {color: 'red'}).addTo(map);
 
-            var loc = []
-            // listener/subscribe untuk emit message
-            socket.on("message", function (msg) {
-                loc.push(msg.split(","));
-                console.log(loc);
+            if(loc.length > 0){
+                // zoom the map to the polyline
+                map.fitBounds(polyline.getBounds());
+            }
+
+            // listener/subscribe untuk pusher
+            window.Echo.channel('messages').listen('MessageCreated', (event) => {
+                console.log("Berhasil Listen ke Pusher");
+                loc.push([event.message.lat, event.message.long]);
                 var polyline = L.polyline(loc, {color: 'red'}).addTo(map);
                 // zoom the map to the polyline
                 map.fitBounds(polyline.getBounds());
+
+                // set meteran
+                altmeter.value = parseFloat(event.message.alt)/10;
+                gauge.value = event.message.sog;
+                compas.value = Math.atan2(event.message.my, event.message.mx) * 180 / Math.PI;
             });
 
-            // GAUGE
-            var compas = new RadialGauge({
-            renderTo: 'compas',
-            minValue: 0,
-            height: 225,
-            width: 175,
-            maxValue: 360,
-            majorTicks: [
-                "N",
-                "NE",
-                "E",
-                "SE",
-                "S",
-                "SW",
-                "W",
-                "NW",
-                "N"
-            ],
-            minorTicks: 22,
-            ticksAngle: 360,
-            startAngle: 180,
-            strokeTicks: false,
-            highlights: false,
-            colorPlate: "transparent",
-            colorMajorTicks: "#9eabec",
-            colorMinorTicks: "#ddd",
-            colorNumbers: "#ccc",
-            colorNeedle: "#121c47",
-            colorNeedleEnd: "#9eabec",
-            valueBox: false,
-            valueTextShadow: false,
-            colorCircleInner: "#fff",
-            colorNeedleCircleOuter: "#ccc",
-            needleCircleSize: 15,
-            needleCircleOuter: false,
-            animationRule: "linear",
-            needleType: "arrow",
-            needleStart: 30,
-            needleEnd: 50,
-            needleWidth: 3,
-            borders: true,
-            borderInnerWidth: 0,
-            borderMiddleWidth: 0,
-            borderOuterWidth: 10,
-            colorBorderOuter: "#ccc",
-            colorBorderOuterEnd: "#ccc",
-            colorNeedleShadowDown: "#222",
-            borderShadowWidth: 0,
-            animationTarget: "plate",
-            animationDuration: 1500,
-            value: 0,
-            animateOnInit: true
-        }).draw();
-        var acl = new RadialGauge({
-            renderTo: 'acl',
-            minValue: 0,
-            maxValue: 8,
-            height: 225,
-            width: 175,
-            majorTicks: [
-                "3",
-                "4",
-                "5",
-                "-2",
-                "-1",
-                "0",
-                "1",
-                "2",
-                "3"
-            ],
-            minorTicks: 5,
-            ticksAngle: 360,
-            startAngle: 180,
-            strokeTicks: false,
-            highlights: false,
-            colorPlate: "transparent",
-            colorMajorTicks: "#f5f5f5",
-            colorMinorTicks: "#ddd",
-            colorNumbers: "#ccc",
-            colorNeedle: "#121c47",
-            colorNeedleEnd: "#9eabec",
-            valueBox: false,
-            valueTextShadow: false,
-            colorCircleInner: "#fff",
-            colorNeedleCircleOuter: "#ccc",
-            needleCircleSize: 15,
-            needleCircleOuter: false,
-            animationRule: "linear",
-            needleType: "arrow",
-            needleStart: 30,
-            needleEnd: 50,
-            needleWidth: 3,
-            borders: true,
-            borderInnerWidth: 0,
-            borderMiddleWidth: 0,
-            borderOuterWidth: 10,
-            colorBorderOuter: "#ccc",
-            colorBorderOuterEnd: "#ccc",
-            colorNeedleShadowDown: "#222",
-            borderShadowWidth: 0,
-            animationDuration: 1500,
-            value: 0 + 5,
-            animateOnInit: true
-        }).draw();
-        var altmeter = new LinearGauge({
-            renderTo: 'altmeter',
-            width: 125,
-            minValue: 0,
-            maxValue: 400,
-            borders: false,
-            majorTicks: [
-                "0",
-                "100",
-                "200",
-                "300",
-                "400",
-            ],
-            colorPlate: 'transparent',
-            colorNumbers: "#FFFFFF",
-            colorNeedle: "#9eabec",
-            colorNeedleEnd: "#9eabec",
-            height: 225,
-        }).draw();
-        var gauge = new RadialGauge({
-            renderTo: 'speedo',
-            width: 175,
-            height: 225,
-            units: "Km/h",
-            minValue: 0,
-            maxValue: 220,
-            majorTicks: [
-                "0",
-                "20",
-                "40",
-                "60",
-                "80",
-                "100",
-                "120",
-                "140",
-                "160",
-                "180",
-                "200",
-                "220"
-            ],
-            minorTicks: 5,
-            strokeTicks: true,
-            colorPlate: "transparent",
-            colorMajorTicks: "#FFFFFF",
-            colorMinorTicks: "#FFFFFF",
-            colorNumbers: "#FFFFFF",
-            borderShadowWidth: 0,
-            colorNeedle: "#121c47",
-            colorNeedleEnd: "#9eabec",
-            borders: false,
-            needleType: "arrow",
-            needleWidth: 4,
-            needleCircleSize: 7,
-            needleCircleOuter: true,
-            needleCircleInner: false,
-            animationDuration: 1500,
-            animationRule: "dequint",
-            animatedValue: true,
-            animateOnInit: true
-        }).draw();
 
         });
     </script>
