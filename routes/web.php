@@ -4,6 +4,7 @@ use App\Events\MessageCreated;
 use App\Http\Controllers\CenterPointController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TelemetriLogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/drone-point', CenterPointController::class);
 
     Route::get('/map',[MapController::class,'index'])->name('map.index');
+
+    Route::get('/telemetri-log/data',[TelemetriLogController::class,'data'])->name('telemetri-log.data');
 });
 
 require __DIR__.'/auth.php';

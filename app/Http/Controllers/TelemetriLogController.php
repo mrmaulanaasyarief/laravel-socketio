@@ -24,7 +24,13 @@ class TelemetriLogController extends Controller
     {
         $telemetriLog = TelemetriLog::create($request->all());
 
-        MessageCreated::dispatch($telemetriLog);
+        $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
+        $diff = end($telemetriLogs)->tPayload - $telemetriLogs[0]->tPayload;
+
+        MessageCreated::dispatch([
+            'telemetriLog' => $telemetriLog,
+            'totalWaktu' => date('H:i:s', $diff)
+        ]);
 
         return response()->json($telemetriLog, 201);
     }
@@ -55,5 +61,17 @@ class TelemetriLogController extends Controller
         $telemetriLog->delete();
 
         return response()->json(null, 204);
+    }
+
+
+
+    // Display data for Datatables
+    public function data()
+    {
+        $telemetriLogs = TelemetriLog::orderBy('created_at', 'DESC');
+
+        return datatables()->of($telemetriLogs)
+            ->addIndexColumn()
+            ->toJson();
     }
 }
