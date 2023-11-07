@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\MessageCreated;
+use App\Http\Controllers\AppController;
 use App\Http\Controllers\CenterPointController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +45,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/map',[MapController::class,'index'])->name('map.index');
 
     Route::get('/telemetri-log/data',[TelemetriLogController::class,'data'])->name('telemetri-log.data');
+
+    Route::prefix('setting')->group(function () {
+        Route::get('/', [AppController::class, 'index'])->name('setting.index');
+        Route::patch('/update', [AppController::class, 'update'])->name('setting.update');
+    });
 });
 
 require __DIR__.'/auth.php';

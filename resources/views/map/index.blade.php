@@ -1,271 +1,428 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Map') }}
         </h2>
     </x-slot>
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="flex flex-row space-x-3">
-                <div class="basis-4/6 xl:basis-2/3">
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-gray-900 dark:text-gray-100">
-                            <section>
-                                <header>
-                                    <div class="flex justify-between">
-                                        <div>
-                                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                {{ __('Mapped Drone') }}
+    <div class="py-3">
+        <div class="max-w-full mx-auto sm:px-3 lg:px-3">
+            <div class="flex flex-col space-y-2">
+                <div class="flex flex-row space-x-1.5">
+                    <div class="basis-1/4 xl:basis-2/12 space-y-2 grid grid-cols-1 grid-flow-row justify-stretch">
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Jarak Tempuh') }}
                                             </h2>
+                                        </header>
 
-                                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                {{ __("View the drone location.") }}
-                                            </p>
+                                        <div class="mt-2.5 space-y-2">
+                                            <div>
+                                                <x-input-label for="koorAwal" :value="__('Koordinat Awal')" />
+                                                <x-text-input id="koorAwal" name="koorAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->lat . ', '. $telemetriLogs[0]->long : 'not available'}}" disabled />
+                                            </div>
+
+                                            <div>
+                                                <x-input-label for="koorAkhir" :value="__('Koordinat Akhir')" />
+                                                <x-text-input id="koorAkhir" name="koorAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->lat . ', '. end($telemetriLogs)->long : 'not available'}}" disabled />
+                                            </div>
+
+                                            <div>
+                                                <x-input-label for="jarakTempuh" :value="__('Jarak Tempuh')" />
+                                                <x-text-input id="jarakTempuh" name="jarakTempuh" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
+                                            </div>
+
+                                            <div>
+                                                <x-input-label for="jarakAwalAkhir" :value="__('Jarak Koordinat Awal-Akhir')" />
+                                                <x-text-input id="jarakAwalAkhir" name="jarakAwalAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
+                                            </div>
                                         </div>
-                                    </div>
-                                </header>
-                            </section>
-                        </div>
-                        <div class="p-6 text-gray-900 dark:text-gray-100">
-                            <div>
-                                <style>
-                                    #map {
-                                        height: 500px;
-                                    }
-                                </style>
-                                <div id="map"></div>
+                                    </section>
+                                </div>
                             </div>
-                            <div class="max-w-lg xl:max-w-4xl overflow-x-auto ">
-                                <div class="flex h-[30%] justify-between space-x-3 p-[1rem]">
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">Speedometer</h5>
-                                            <canvas id="speedo"></canvas>
+                        </div>
+
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Waktu Tempuh') }}
+                                            </h2>
+                                        </header>
+
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="waktuAwal" :value="__('Waktu Awal')" />
+                                                    <x-text-input id="waktuAwal" name="waktuAwal" type="text" class="mt-1 block w-full"  value="{{ $telemetriLogs ? date('H:i:s', $telemetriLogs[0]->tPayload).' WIB' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="waktuAkhir" :value="__('Waktu Akhir')" />
+                                                    <x-text-input id="waktuAkhir" name="waktuAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? date('H:i:s', end($telemetriLogs)->tPayload).' WIB' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <x-input-label for="totalWaktu" :value="__('Total Waktu')" />
+                                                <x-text-input id="totalWaktu" name="totalWaktu" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? date('H:i:s', end($telemetriLogs)->tPayload - $telemetriLogs[0]->tPayload).' s' : 'not available'}}" disabled />
+                                            </div>
                                         </div>
-                                    </div>
-                                    {{-- <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">Accelerometer</h5>
-                                            <canvas id="acl"></canvas>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Drone 3D Position') }}
+                                            </h2>
+                                        </header>
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="roll" :value="__('Roll')" />
+                                                    <x-text-input id="roll" name="roll" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->roll.'°' : 'not available'}}" disabled />
+                                                    @if ($telemetriLogs)
+                                                        @if ((float) end($telemetriLogs)->roll > 0)
+                                                            @php
+                                                                $status_roll = "miring kanan";
+                                                            @endphp
+                                                        @else
+                                                            @php
+                                                                $status_roll = "miring kiri";
+                                                            @endphp
+                                                        @endif
+                                                    @endif
+                                                    <x-input-info class="text-center" :value="$status_roll ? $status_roll : null" />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="pitch" :value="__('Pitch')" />
+                                                    <x-text-input id="pitch" name="pitch" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->pitch.'°' : 'not available'}}" disabled />
+                                                    @if ($telemetriLogs)
+                                                        @if ((float) end($telemetriLogs)->pitch > 0)
+                                                            @php
+                                                                $status_pitch = "menjulang";
+                                                            @endphp
+                                                        @else
+                                                            @php
+                                                                $status_pitch = "menukik";
+                                                            @endphp
+                                                        @endif
+                                                    @endif
+                                                    <x-input-info class="text-center" :value="$status_pitch ? $status_pitch : null" />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="yaw" :value="__('Yaw')" />
+                                                    <x-text-input id="yaw" name="yaw" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->yaw.'°' : 'not available'}}" disabled />
+                                                    @if ($telemetriLogs)
+                                                        @if ((float) end($telemetriLogs)->pitch > 0)
+                                                            @php
+                                                                $status_yaw = "putar kanan";
+                                                            @endphp
+                                                        @else
+                                                            @php
+                                                                $status_yaw = "putar kiri";
+                                                            @endphp
+                                                        @endif
+                                                    @endif
+                                                    <x-input-info class="text-center" :value="$status_yaw ? $status_yaw : null" />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row">
+                                                <style>
+                                                    * {
+                                                        -webkit-user-select: none;
+                                                    }
+
+                                                    .container {
+                                                    transform: perspective(25px);
+                                                    }
+
+                                                    #panel {
+                                                    /* height:90px;
+                                                    width:160px; */
+                                                    border:1px solid #fc5300;
+                                                    }
+
+                                                    #panel img{
+                                                        max-width: 50%;
+                                                        height: auto;
+                                                    }
+                                                </style>
+                                                <div class="container flex items-center justify-center">
+                                                    {{-- <div id="panel" data-rotate-x=0 data-rotate-y=0 data-rotate-z=0><img src="http://placehold.it/360x150"/></div> --}}
+                                                    <div class="flex items-center justify-center" id="panel" data-rotate-x=0 data-rotate-y=0 data-rotate-z=0><img src="https://png.pngtree.com/png-clipart/20230425/original/pngtree-drone-from-top-view-png-image_9095281.png"/></div>
+                                                </div>
+                                            </div>
+
                                         </div>
-                                    </div> --}}
-                                    {{-- <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">Gyro</h5>
-                                            <div id="gyro"></div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="basis-2/4 xl:basis-8/12 space-y-2 grid grid-cols-1 grid-flow-row justify-stretch">
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-4 text-gray-900">
+                                <div>
+                                    <div id="map" class="h-[545px] xl:h-[580px]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-4 text-gray-900">
+                                <div class="max-w-lg xl:max-w-4xl overflow-x-auto ">
+                                    <div class="flex h-[30%] justify-between space-x-1.5 p-[1rem]">
+                                        <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Speedometer</h5>
+                                                <canvas id="speedo"></canvas>
+                                            </div>
                                         </div>
-                                    </div> --}}
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">COMPAS</h5>
-                                            <canvas id="compas"></canvas>
+                                        {{-- <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Accelerometer</h5>
+                                                <canvas id="acl"></canvas>
+                                            </div>
+                                        </div> --}}
+                                        {{-- <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Gyro</h5>
+                                                <div id="gyro"></div>
+                                            </div>
+                                        </div> --}}
+                                        <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">COMPAS</h5>
+                                                <canvas id="compas"></canvas>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">Altimeter</h5>
-                                            <canvas id="altmeter"></canvas>
+                                        <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Altimeter</h5>
+                                                <canvas id="altmeter"></canvas>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-col items-center">
-                                            <h5 class="text-[15px] font-[600] uppercase">Temperature</h5>
-                                            <canvas id="temperature"></canvas>
+                                        <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Temperature</h5>
+                                                <canvas id="temperature"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <div class="flex flex-col items-center">
+                                                <h5 class="text-[15px] font-[600] uppercase">Humidity</h5>
+                                                <canvas id="humidity"></canvas>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="max-w-lg xl:max-w-4xl">
-                                <table class="table" id="dataTelemetriLogs">
-                                    <thead>
-                                        <tr>
-                                            <th>No.</th>
-                                            <th>Time Received</th>
-                                            <th>Time Payload</th>
-                                            <th>Latitude</th>
-                                            <th>Longitude</th>
-                                            <th>Altitude</th>
-                                            <th>Speed over Ground</th>
-                                            <th>Course over Ground</th>
-                                            <th>Arus</th>
-                                            <th>Tegangan</th>
-                                            <th>Daya</th>
-                                            <th>Klasifikasi</th>
-                                            <th>Acceleration X</th>
-                                            <th>Acceleration Y</th>
-                                            <th>Acceleration Z</th>
-                                            <th>Gyro X</th>
-                                            <th>Gyro Y</th>
-                                            <th>Gyro Z</th>
-                                            <th>Magnetometer X</th>
-                                            <th>Magnetometer Y</th>
-                                            <th>Magnetometer Z</th>
-                                            <th>Roll</th>
-                                            <th>Pitch</th>
-                                            <th>Yaw</th>
-                                            <th>Suhu</th>
-                                            <th>Humidity</th>
-                                        </tr>
-                                    <tbody class="text-center"></tbody>
-                                    </thead>
-                                </table>
+                        </div>
+                    </div>
+
+                    <div class="basis-1/4 xl:basis-2/12 space-y-2 grid grid-cols-1 grid-flow-row justify-stretch">
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Penggunaan Daya') }}
+                                            </h2>
+                                        </header>
+
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="teganganAwal" :value="__('Tegangan Awal')" />
+                                                    <x-text-input id="teganganAwal" name="teganganAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->tegangan.' V' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="teganganAkhir" :value="__('Tegangan Akhir')" />
+                                                    <x-text-input id="teganganAkhir" name="teganganAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->tegangan.' V' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="arusAwal" :value="__('Arus Awal')" />
+                                                    <x-text-input id="arusAwal" name="arusAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->arus.' mA' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="arusAkhir" :value="__('Arus Akhir')" />
+                                                    <x-text-input id="arusAkhir" name="arusAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->arus.' mA' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="dayaAwal" :value="__('Daya Awal')" />
+                                                    <x-text-input id="dayaAwal" name="dayaAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->daya.' mW' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/2">
+                                                    <x-input-label for="dayaAkhir" :value="__('Daya Akhir')" />
+                                                    <x-text-input id="dayaAkhir" name="dayaAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->daya.' mW' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Magnetometer') }}
+                                            </h2>
+                                        </header>
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="magnetometerX" :value="__('X')" />
+                                                    <x-text-input id="magnetometerX" name="magnetometerX" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->mx.' n/T' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="magnetometerY" :value="__('Y')" />
+                                                    <x-text-input id="magnetometerY" name="magnetometerY" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->my.' n/T' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="magnetometerZ" :value="__('Z')" />
+                                                    <x-text-input id="magnetometerZ" name="magnetometerZ" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->mz.' n/T' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Acceleration') }}
+                                            </h2>
+                                        </header>
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="accelerationX" :value="__('X')" />
+                                                    <x-text-input id="accelerationX" name="accelerationX" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->ax.' g' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="accelerationY" :value="__('Y')" />
+                                                    <x-text-input id="accelerationY" name="accelerationY" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->ay.' g' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="accelerationZ" :value="__('Z')" />
+                                                    <x-text-input id="accelerationZ" name="accelerationZ" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->az.' g' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="overflow-y-auto p-4 text-gray-900">
+                                <div class="max-w-xl">
+                                    <section>
+                                        <header>
+                                            <h2 class="text-lg font-medium text-gray-900">
+                                                {{ __('Gyroscope') }}
+                                            </h2>
+                                        </header>
+                                        <div class="mt-2.5 space-y-2">
+                                            <div class="flex flex-row space-x-1.5">
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="gyroscopeX" :value="__('X')" />
+                                                    <x-text-input id="gyroscopeX" name="gyroscopeX" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->gx.'°/s' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="gyroscopeY" :value="__('Y')" />
+                                                    <x-text-input id="gyroscopeY" name="gyroscopeY" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->gy.'°/s' : 'not available'}}" disabled />
+                                                </div>
+
+                                                <div class="basis-1/3">
+                                                    <x-input-label for="gyroscopeZ" :value="__('Z')" />
+                                                    <x-text-input id="gyroscopeZ" name="gyroscopeZ" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->gz.'°/s' : 'not available'}}" disabled />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="basis-2/6 xl:basis-1/3 space-y-3">
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="overflow-y-auto p-6 text-gray-900 dark:text-gray-100">
-                            <div class="max-w-xl">
-                                <section>
-                                    <header>
-                                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                            {{ __('Jarak Tempuh') }}
-                                        </h2>
-                                    </header>
-
-                                    <div class="mt-6 space-y-3">
-                                        <div>
-                                            <x-input-label for="koorAwal" :value="__('Koordinat Awal')" />
-                                            <x-text-input id="koorAwal" name="koorAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->lat . ', '. $telemetriLogs[0]->long : 'not available'}}" disabled />
-                                        </div>
-
-                                        <div>
-                                            <x-input-label for="koorAkhir" :value="__('Koordinat Akhir')" />
-                                            <x-text-input id="koorAkhir" name="koorAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->lat . ', '. end($telemetriLogs)->long : 'not available'}}" disabled />
-                                        </div>
-
-                                        <div>
-                                            <x-input-label for="jarakTempuh" :value="__('Jarak Tempuh')" />
-                                            <x-text-input id="jarakTempuh" name="jarakTempuh" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
-                                        </div>
-
-                                        <div>
-                                            <x-input-label for="jarakAwalAkhir" :value="__('Jarak Koordinat Awal-Akhir')" />
-                                            <x-text-input id="jarakAwalAkhir" name="jarakAwalAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="overflow-y-auto p-6 text-gray-900 dark:text-gray-100">
-                            <div class="max-w-xl">
-                                <section>
-                                    <header>
-                                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                            {{ __('Waktu Tempuh') }}
-                                        </h2>
-                                    </header>
-
-                                    <div class="mt-6 space-y-3">
-                                        <div class="flex flex-row space-x-4">
-                                            <div class="basis-1/2">
-                                                <x-input-label for="waktuAwal" :value="__('Waktu Awal')" />
-                                                <x-text-input id="waktuAwal" name="waktuAwal" type="text" class="mt-1 block w-full"  value="{{ $telemetriLogs ? date('H:i:s', $telemetriLogs[0]->tPayload) : 'not available'}}" disabled />
-                                            </div>
-
-                                            <div class="basis-1/2">
-                                                <x-input-label for="waktuAkhir" :value="__('Waktu Akhir')" />
-                                                <x-text-input id="waktuAkhir" name="waktuAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? date('H:i:s', end($telemetriLogs)->tPayload) : 'not available'}}" disabled />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <x-input-label for="totalWaktu" :value="__('Total Waktu')" />
-                                            <x-text-input id="totalWaktu" name="totalWaktu" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? date('H:i:s', end($telemetriLogs)->tPayload - $telemetriLogs[0]->tPayload) : 'not available'}}" disabled />
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="overflow-y-auto p-6 text-gray-900 dark:text-gray-100">
-                            <div class="max-w-xl">
-                                <section>
-                                    <header>
-                                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                            {{ __('Penggunaan Daya') }}
-                                        </h2>
-                                    </header>
-
-                                    <div class="mt-6 space-y-3">
-                                        <div class="flex flex-row space-x-4">
-                                            <div class="basis-1/2">
-                                                <x-input-label for="teganganAwal" :value="__('Tegangan Awal')" />
-                                                <x-text-input id="teganganAwal" name="teganganAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->tegangan : 'not available'}}" disabled />
-                                            </div>
-
-                                            <div class="basis-1/2">
-                                                <x-input-label for="teganganAkhir" :value="__('Tegangan Akhir')" />
-                                                <x-text-input id="teganganAkhir" name="teganganAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->tegangan : 'not available'}}" disabled />
-                                            </div>
-                                        </div>
-
-                                        <div class="flex flex-row space-x-4">
-                                            <div class="basis-1/2">
-                                                <x-input-label for="arusAwal" :value="__('Arus Awal')" />
-                                                <x-text-input id="arusAwal" name="arusAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->arus : 'not available'}}" disabled />
-                                            </div>
-
-                                            <div class="basis-1/2">
-                                                <x-input-label for="arusAkhir" :value="__('Arus Akhir')" />
-                                                <x-text-input id="arusAkhir" name="arusAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->arus : 'not available'}}" disabled />
-                                            </div>
-                                        </div>
-
-                                        <div class="flex flex-row space-x-4">
-                                            <div class="basis-1/2">
-                                                <x-input-label for="dayaAwal" :value="__('Daya Awal')" />
-                                                <x-text-input id="dayaAwal" name="dayaAwal" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $telemetriLogs[0]->daya : 'not available'}}" disabled />
-                                            </div>
-
-                                            <div class="basis-1/2">
-                                                <x-input-label for="dayaAkhir" :value="__('Daya Akhir')" />
-                                                <x-text-input id="dayaAkhir" name="dayaAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->daya : 'not available'}}" disabled />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="overflow-y-auto p-6 text-gray-900 dark:text-gray-100">
-                            <div class="max-w-xl">
-                                <section>
-                                    <header>
-                                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                            {{ __('Roll Pitch Yaw') }}
-                                        </h2>
-                                    </header>
-                                    <div class="mt-6 space-y-3">
-                                        <style>
-                                            * {
-                                                -webkit-user-select: none;
-                                            }
-
-                                            .container {
-                                            transform: perspective(25px);
-                                            }
-
-                                            #panel {
-                                            /* height:90px;
-                                            width:160px; */
-                                            border:1px solid #fc5300;
-                                            }
-                                        </style>
-
-                                        <div class="container flex items-center justify-center">
-                                            {{-- <div id="panel" data-rotate-x=0 data-rotate-y=0 data-rotate-z=0><img src="http://placehold.it/360x150"/></div> --}}
-                                            <div id="panel" data-rotate-x=0 data-rotate-y=0 data-rotate-z=0><img src="https://png.pngtree.com/png-clipart/20230425/original/pngtree-drone-from-top-view-png-image_9095281.png"/></div>
-                                        </div>
-                                    </div>
-                                </section>
+                <div>
+                    <div>
+                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-4 text-gray-900">
+                                <div class="max-w-full">
+                                    <table class="table" id="dataTelemetriLogs">
+                                        <thead>
+                                            <tr>
+                                                <th>No.</th>
+                                                <th>Time Received</th>
+                                                <th>Time Payload</th>
+                                                <th>Latitude</th>
+                                                <th>Longitude</th>
+                                                <th>Altitude</th>
+                                                <th>SoG</th>
+                                                <th>Cog</th>
+                                                <th>Arus</th>
+                                                <th>Tegangan</th>
+                                                <th>Daya</th>
+                                                <th>Klasifikasi</th>
+                                                <th>AX</th>
+                                                <th>AY</th>
+                                                <th>AZ</th>
+                                                <th>GX</th>
+                                                <th>GY</th>
+                                                <th>GZ</th>
+                                                <th>MX</th>
+                                                <th>MY</th>
+                                                <th>MZ</th>
+                                                <th>Roll</th>
+                                                <th>Pitch</th>
+                                                <th>Yaw</th>
+                                                <th>Suhu</th>
+                                                <th>Humidity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-center"></tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -277,11 +434,6 @@
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous">
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous">
-    </script>
-
-    {{-- datatable --}}
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script>
         $(function(){
             // Menambah attribut pada leaflet
@@ -387,6 +539,7 @@
                 gauge.value = {{ $telemetriLog->sog }};
                 compas.value = Math.atan2({{ $telemetriLog->my }}, {{ $telemetriLog->mx }}) * 180 / Math.PI;
                 temperature.value = {{ $telemetriLog->suhu }};
+                humidity.value = {{ $telemetriLog->humidity }};
 
                 panel.dataset.rotateX = {{ $telemetriLog->pitch }};
                 panel.dataset.rotateY = {{ $telemetriLog->yaw }};
@@ -461,7 +614,8 @@
                 altmeter.value = parseFloat(event.message.telemetriLog.alt)/10;
                 gauge.value = event.message.telemetriLog.sog;
                 compas.value = Math.atan2(event.message.telemetriLog.my, event.message.telemetriLog.mx) * 180 / Math.PI;
-                temperature.value = event.message.suhu;
+                temperature.value = event.message.telemetriLog.suhu;
+                humidity.value = event.message.telemetriLog.humidity;
 
                 document.getElementById("koorAkhir").value = event.message.telemetriLog.lat+ ', '+ event.message.telemetriLog.long;
                 document.getElementById("waktuAkhir").value = event.message.telemetriLog.tPayload;
@@ -469,6 +623,18 @@
                 document.getElementById("teganganAkhir").value = event.message.telemetriLog.tegangan;
                 document.getElementById("arusAkhir").value = event.message.telemetriLog.arus;
                 document.getElementById("dayaAkhir").value = event.message.telemetriLog.daya;
+                document.getElementById("roll").value = event.message.telemetriLog.roll;
+                document.getElementById("pitch").value = event.message.telemetriLog.pitch;
+                document.getElementById("yaw").value = event.message.telemetriLog.yaw;
+                document.getElementById("accelerationX").value = event.message.telemetriLog.ax;
+                document.getElementById("accelerationY").value = event.message.telemetriLog.ay;
+                document.getElementById("accelerationZ").value = event.message.telemetriLog.az;
+                document.getElementById("gyroscopeX").value = event.message.telemetriLog.gx;
+                document.getElementById("gyroscopeY").value = event.message.telemetriLog.gy;
+                document.getElementById("gyroscopeZ").value = event.message.telemetriLog.gz;
+                document.getElementById("magnetometerX").value = event.message.telemetriLog.mx;
+                document.getElementById("magnetometerY").value = event.message.telemetriLog.my;
+                document.getElementById("magnetometerZ").value = event.message.telemetriLog.mz;
 
                 $('#dataTelemetriLogs').DataTable().ajax.reload();
 
