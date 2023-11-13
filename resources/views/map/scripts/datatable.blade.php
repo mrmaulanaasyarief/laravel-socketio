@@ -4,7 +4,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.27/build/pdfmake.min.js"></script>
 <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.27/build/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/1.4.0/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/1.4.0/js/buttons.flash.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/1.4.0/js/buttons.html5.min.js"></script>
@@ -15,7 +14,6 @@
     $('#dataTelemetriLogs').DataTable({
         scrollX: true,
         processing: true,
-        serverSide: true,
         responsive: true,
         lengthChange: true,
         autoWidth: true,
@@ -26,12 +24,12 @@
                 orientation: 'landscape',
                 pageSize: 'A3',
                 text: 'Export to PDF',
-                title: '{{ $app->name }}_TelemetriLogs',
+                title: '{{ $app ? $app->name : "GCS" }}_TelemetriLogs',
             },
             {
                 extend: 'excelHtml5',
                 text: 'Export to Excel',
-                title: '{{ $app->name }}_TelemetriLogs'
+                title: '{{ $app ? $app->name : "GCS"}}_TelemetriLogs'
             }
         ],
         ajax: '{{ route('telemetri-log.data') }}',
@@ -39,9 +37,6 @@
                 data: 'DT_RowIndex',
                 orderable: false,
                 searchable: false
-            },
-            {
-                data: 'tReceived'
             },
             {
                 data: 'tPayload'

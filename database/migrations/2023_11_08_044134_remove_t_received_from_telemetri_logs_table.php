@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('drone_points', function (Blueprint $table) {
-            $table->id();
-            $table->string('latitude');
-            $table->string('longitude');
-            $table->timestamps();
+        Schema::table('telemetri_logs', function (Blueprint $table) {
+            $table->dropColumn('tReceived');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('drone_locations');
+        Schema::table('telemetri_logs', function (Blueprint $table) {
+            $table->string('tReceived')->nullable();
+        });
     }
 };

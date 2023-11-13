@@ -32,12 +32,12 @@
 
                                             <div>
                                                 <x-input-label for="jarakTempuh" :value="__('Jarak Tempuh')" />
-                                                <x-text-input id="jarakTempuh" name="jarakTempuh" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
+                                                <x-text-input id="jarakTempuh" name="jarakTempuh" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $jarakTempuh . ' m' : 'not available'}}" disabled />
                                             </div>
 
                                             <div>
                                                 <x-input-label for="jarakAwalAkhir" :value="__('Jarak Koordinat Awal-Akhir')" />
-                                                <x-text-input id="jarakAwalAkhir" name="jarakAwalAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? '-' : 'not available'}}" disabled />
+                                                <x-text-input id="jarakAwalAkhir" name="jarakAwalAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? $jarakAwalAkhir . ' m' : 'not available'}}" disabled />
                                             </div>
                                         </div>
                                     </section>
@@ -103,7 +103,7 @@
                                                             @endphp
                                                         @endif
                                                     @endif
-                                                    <x-input-info class="text-center" :value="$status_roll ? $status_roll : null" />
+                                                    <x-input-info id="roll-info" class="text-center" :value="$telemetriLogs ? $status_roll : null" />
                                                 </div>
 
                                                 <div class="basis-1/3">
@@ -120,7 +120,7 @@
                                                             @endphp
                                                         @endif
                                                     @endif
-                                                    <x-input-info class="text-center" :value="$status_pitch ? $status_pitch : null" />
+                                                    <x-input-info id="pitch-info" class="text-center" :value="$telemetriLogs ? $status_pitch : null" />
                                                 </div>
 
                                                 <div class="basis-1/3">
@@ -137,7 +137,7 @@
                                                             @endphp
                                                         @endif
                                                     @endif
-                                                    <x-input-info class="text-center" :value="$status_yaw ? $status_yaw : null" />
+                                                    <x-input-info id="yaw-info" class="text-center" :value="$telemetriLogs ? $status_yaw : null" />
                                                 </div>
                                             </div>
                                             <div class="flex flex-row">
@@ -281,6 +281,19 @@
                                                     <x-text-input id="dayaAkhir" name="dayaAkhir" type="text" class="mt-1 block w-full" value="{{ $telemetriLogs ? end($telemetriLogs)->daya.' mW' : 'not available'}}" disabled />
                                                 </div>
                                             </div>
+                                            <div class="flex flex-row space-x-1.5">
+                                                @if ($telemetriLogs && end($telemetriLogs)->tegangan < 10)
+                                                    <div id="alert-battery" class="flex w-full items-center p-4 text-red-800 rounded-lg bg-red-50" role="alert">
+                                                        <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                                        </svg>
+                                                        <span class="sr-only">Info</span>
+                                                        <div class="ml-3 text-sm font-medium">
+                                                            Low Battery
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </section>
                                 </div>
@@ -393,7 +406,6 @@
                                         <thead>
                                             <tr>
                                                 <th>No.</th>
-                                                <th>Time Received</th>
                                                 <th>Time Payload</th>
                                                 <th>Latitude</th>
                                                 <th>Longitude</th>
@@ -564,6 +576,18 @@
                 shadowSize: [41, 41]
             });
 
+            // create a red polyline from an array of LatLng points
+            var latlngs = [];
+            @foreach($gardenProfiles as $gardenProfile )
+            // polygon
+                idx = latlngs.push([])-1;
+                @foreach ($gardenProfile->polygon as $coor);
+                    latlngs[idx].push([{{ $coor['lat'] }}, {{ $coor['lng'] }}]);
+                @endforeach
+
+                polygon = L.polygon(latlngs[idx], {color: 'red'}).bindPopup("<div class='my-2'><strong>Nama: </strong> <br>"+'{{ $gardenProfile->name }}'+"</div>").addTo(map);
+            @endforeach
+
             for (i in datas) {
                 var title = datas[i].title,
                     location = datas[i].loc,
@@ -578,7 +602,9 @@
                         "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+klasifikasi+"</div>"+
                         "<div class='my-2'><strong>Persentase:</strong> <br>"+persentase+"</div>"
                     );
-                markersLayer.addLayer(marker);
+                if (klasifikasi == 1) {
+                    markersLayer.addLayer(marker);
+                }
             }
 
             map.addLayer(markersLayer);
@@ -605,7 +631,10 @@
                     "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+event.message.telemetriLog.klasifikasi+"</div>"+
                     "<div class='my-2'><strong>Persentase:</strong> <br>"+event.message.telemetriLog.persentase+"</div>"
                 );
-                markersLayer.addLayer(marker);
+
+                if (event.message.telemetriLog.klasifikasi == 1) {
+                    markersLayer.addLayer(marker);
+                }
                 var polyline = L.polyline(loc, {color: 'red'}).addTo(map);
                 // zoom the map to the polyline
                 map.fitBounds(polyline.getBounds());
@@ -618,23 +647,38 @@
                 humidity.value = event.message.telemetriLog.humidity;
 
                 document.getElementById("koorAkhir").value = event.message.telemetriLog.lat+ ', '+ event.message.telemetriLog.long;
-                document.getElementById("waktuAkhir").value = event.message.telemetriLog.tPayload;
-                document.getElementById("totalWaktu").value = event.message.totalWaktu;
-                document.getElementById("teganganAkhir").value = event.message.telemetriLog.tegangan;
-                document.getElementById("arusAkhir").value = event.message.telemetriLog.arus;
-                document.getElementById("dayaAkhir").value = event.message.telemetriLog.daya;
-                document.getElementById("roll").value = event.message.telemetriLog.roll;
-                document.getElementById("pitch").value = event.message.telemetriLog.pitch;
-                document.getElementById("yaw").value = event.message.telemetriLog.yaw;
-                document.getElementById("accelerationX").value = event.message.telemetriLog.ax;
-                document.getElementById("accelerationY").value = event.message.telemetriLog.ay;
-                document.getElementById("accelerationZ").value = event.message.telemetriLog.az;
-                document.getElementById("gyroscopeX").value = event.message.telemetriLog.gx;
-                document.getElementById("gyroscopeY").value = event.message.telemetriLog.gy;
-                document.getElementById("gyroscopeZ").value = event.message.telemetriLog.gz;
-                document.getElementById("magnetometerX").value = event.message.telemetriLog.mx;
-                document.getElementById("magnetometerY").value = event.message.telemetriLog.my;
-                document.getElementById("magnetometerZ").value = event.message.telemetriLog.mz;
+                document.getElementById("jarakTempuh").value = event.message.jarakTempuh + ' m';
+                document.getElementById("jarakAwalAkhir").value = event.message.jarakAwalAkhir + ' m';
+                document.getElementById("waktuAkhir").value = event.message.telemetriLog.tPayload + ' WIB';
+                document.getElementById("totalWaktu").value = event.message.totalWaktu + ' s';
+                document.getElementById("teganganAkhir").value = event.message.telemetriLog.tegangan + ' V';
+                document.getElementById("arusAkhir").value = event.message.telemetriLog.arus + ' mA';
+                document.getElementById("dayaAkhir").value = event.message.telemetriLog.daya + ' mW';
+
+                if(event.message.telemetriLog.tegangan < 10){
+                    console.log("kurang")
+                    document.getElementById("alert-battery").classList.remove("hidden");
+                }else{
+                    console.log("lebih")
+                    document.getElementById("alert-battery").classList.add("hidden");
+                }
+
+                document.getElementById("roll").value = event.message.telemetriLog.roll + '°';
+                document.getElementById("roll-info").innerText = event.message.telemetriLog.roll > 0 ? "miring kanan" : "miring kiri";
+                document.getElementById("pitch").value = event.message.telemetriLog.pitch + '°';
+                document.getElementById("pitch-info").innerText = event.message.telemetriLog.pitch > 0 ? "menjulang" : "menukik";
+                document.getElementById("yaw").value = event.message.telemetriLog.yaw + '°';
+                document.getElementById("yaw-info").innerText = event.message.telemetriLog.yaw > 0 ? "putar kanan" : "putar kiri";
+
+                document.getElementById("accelerationX").value = event.message.telemetriLog.ax + ' g';
+                document.getElementById("accelerationY").value = event.message.telemetriLog.ay + ' g';
+                document.getElementById("accelerationZ").value = event.message.telemetriLog.az + ' g';
+                document.getElementById("gyroscopeX").value = event.message.telemetriLog.gx + '°/s';
+                document.getElementById("gyroscopeY").value = event.message.telemetriLog.gy + '°/s';
+                document.getElementById("gyroscopeZ").value = event.message.telemetriLog.gz + '°/s';
+                document.getElementById("magnetometerX").value = event.message.telemetriLog.mx + ' n/T';
+                document.getElementById("magnetometerY").value = event.message.telemetriLog.my + ' n/T';
+                document.getElementById("magnetometerZ").value = event.message.telemetriLog.mz + ' n/T';
 
                 $('#dataTelemetriLogs').DataTable().ajax.reload();
 

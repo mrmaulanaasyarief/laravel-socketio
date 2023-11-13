@@ -3,9 +3,12 @@
 use App\Events\MessageCreated;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\CenterPointController;
+use App\Http\Controllers\GardenProfileController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TelemetriLogController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,17 +22,27 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('message/created', function () {
-    MessageCreated::dispatch('Lorem ipsum dolor sit amet');
-});
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/map');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+Route::get('/', [MapController::class,'index'], function () {
+    return view('map.index');
+})->middleware(['auth', 'verified'])->name('map.index');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -39,10 +52,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/center-point/data',[CenterPointController::class,'data'])->name('center-point.data');
     Route::resource('/center-point', CenterPointController::class);
 
-    Route::get('/drone-point/data',[CenterPointController::class,'data'])->name('drone-point.data');
-    Route::resource('/drone-point', CenterPointController::class);
+    // Route::get('/drone-point/data',[CenterPointController::class,'data'])->name('drone-point.data');
+    // Route::resource('/drone-point', CenterPointController::class);
 
     Route::get('/map',[MapController::class,'index'])->name('map.index');
+
+    Route::get('/garden-profile',[GardenProfileController::class,'index'])->name('garden-profile.index');
 
     Route::get('/telemetri-log/data',[TelemetriLogController::class,'data'])->name('telemetri-log.data');
 

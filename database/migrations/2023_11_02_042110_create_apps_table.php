@@ -17,9 +17,9 @@ return new class extends Migration
             $table->longText('description');
             $table->string('version');
             $table->string('image')->nullable();
-            $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->foreign('created_by')->on('users')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->unsignedBigInteger('updated_by');
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->foreign('updated_by')->on('users')->references('id')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
