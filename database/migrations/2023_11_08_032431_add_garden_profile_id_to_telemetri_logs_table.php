@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('telemetri_logs', function (Blueprint $table) {
             // $table->unsignedBigInteger('garden_profile_id')->nullable();
-            $table->foreignId('garden_profile_id')->after('klasifikasi')->constrained()->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('garden_profile_id')->after('klasifikasi')->constrained()->onDelete('cascade')->onUpdate('cascade')->nullable();
         });
     }
 

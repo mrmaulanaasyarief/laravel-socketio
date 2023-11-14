@@ -547,11 +547,11 @@
                     "persentase": 'kosong'}
                 );
                 loc.push(['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}']);
-                altmeter.value = {{ $telemetriLog->alt }}/10;
-                gauge.value = {{ $telemetriLog->sog }};
-                compas.value = Math.atan2({{ $telemetriLog->my }}, {{ $telemetriLog->mx }}) * 180 / Math.PI;
-                temperature.value = {{ $telemetriLog->suhu }};
-                humidity.value = {{ $telemetriLog->humidity }};
+                altmeter.value = {{ $telemetriLog->alt ? $telemetriLog->alt : 0}}/10;
+                gauge.value = {{ $telemetriLog->sog ? $telemetriLog->sog : 0 }};
+                compas.value = Math.atan2({{ $telemetriLog->my ? $telemetriLog->my : 0 }}, {{ $telemetriLog->mx ? $telemetriLog->mx : 0 }}) * 180 / Math.PI;
+                temperature.value = {{ $telemetriLog->suhu ? $telemetriLog->suhu : 0 }};
+                humidity.value = {{ $telemetriLog->humidity ? $telemetriLog->humidity : 0 }};
 
                 panel.dataset.rotateX = {{ $telemetriLog->pitch }};
                 panel.dataset.rotateY = {{ $telemetriLog->yaw }};
