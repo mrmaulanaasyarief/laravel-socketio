@@ -23,6 +23,12 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-nav-link :href="route('flight-code.index')" :active="request()->routeIs('flight-code.*')">
+                        {{ __('Flight Code') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('setting.index')" :active="request()->routeIs('setting.*')">
                         {{ __('Setting') }}
                     </x-nav-link>
@@ -87,6 +93,12 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('garden-profile.index')" :active="request()->routeIs('garden-profile.*')">
                 {{ __('Garden Profile') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('flight-code.index')" :active="request()->routeIs('flight-code.*')">
+                {{ __('Flight Code') }}
             </x-responsive-nav-link>
         </div>
 

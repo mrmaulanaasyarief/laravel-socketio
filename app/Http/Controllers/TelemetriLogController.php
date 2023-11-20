@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Events\MessageCreated;
 use App\Http\Requests\StoreTelemetriLogRequest;
 use App\Http\Requests\UpdateTelemetriLogRequest;
+use App\Models\FlightCode;
 use App\Models\GardenProfile;
 use App\Models\TelemetriLog;
+use Illuminate\Support\Facades\Session;
 
 class TelemetriLogController extends Controller
 {
@@ -23,14 +25,33 @@ class TelemetriLogController extends Controller
      */
     public function store(StoreTelemetriLogRequest $request)
     {
-        $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
-        $telemetriLog = TelemetriLog::orderBy('created_at', 'desc')->first();
-        $request['haversine'] = $this->haversineGreatCircleDistance(
-            $telemetriLog->lat,
-            $telemetriLog->long,
-            $request['lat'],
-            $request['long'],
-        );
+        $selectedFlightCode = FlightCode::where('selected', 1)->first()->id;
+        $request['flight_code_id'] = $selectedFlightCode;
+
+        $selectedFlightCodeSession = Session::get('selectedFlightCode');
+
+        if(empty($selectedFlightCodeSession)){
+            $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::orderBy('created_at', 'desc')->first();
+        }else{
+            $telemetriLogs = TelemetriLog::where('flight_code_id', $selectedFlightCodeSession)->orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::where('flight_code_id', $selectedFlightCodeSession)->orderBy('created_at', 'desc')->first();
+        }
+        if(count($telemetriLogs) != 0){
+            $request['haversine'] = $this->haversineGreatCircleDistance(
+                $telemetriLog->lat,
+                $telemetriLog->long,
+                $request['lat'],
+                $request['long'],
+            );
+            $diff = end($telemetriLogs)->tPayload - $telemetriLogs[0]->tPayload;
+            $totalWaktu = date('H:i:s', $diff);
+            $jarakAwalAkhir = $this->haversineGreatCircleDistance($telemetriLogs[0]->lat, $telemetriLogs[0]->long, $request['lat'], $request['long']);
+        }else{
+            $request['haversine'] = 0;
+            $totalWaktu = 0;
+            $jarakAwalAkhir = 0;
+        }
 
         $gardenProfiles = GardenProfile::orderBy('id', 'asc')->get()->all();
 
@@ -64,14 +85,15 @@ class TelemetriLogController extends Controller
             $telemetriLog = TelemetriLog::create($request->all());
         }
 
-        $diff = end($telemetriLogs)->tPayload - $telemetriLogs[0]->tPayload;
-
-        MessageCreated::dispatch([
-            'telemetriLog' => $telemetriLog,
-            'totalWaktu' => date('H:i:s', $diff),
-            'jarakTempuh' => TelemetriLog::all()->sum('haversine'),
-            'jarakAwalAkhir' => $this->haversineGreatCircleDistance($telemetriLogs[0]->lat, $telemetriLogs[0]->long, $request['lat'], $request['long'])
-        ]);
+        if(!empty($selectedFlightCodeSession) && $selectedFlightCodeSession == $selectedFlightCode){
+            MessageCreated::dispatch([
+                'telemetriLog' => $telemetriLog,
+                'totalWaktu' => $totalWaktu,
+                'jarakTempuh' => TelemetriLog::where('flight_code_id', $selectedFlightCodeSession)->sum('haversine'),
+                'jarakAwalAkhir' => $jarakAwalAkhir,
+                'selectedFlightCode' => $selectedFlightCode
+            ]);
+        }
 
         return response()->json($telemetriLog, 201);
     }

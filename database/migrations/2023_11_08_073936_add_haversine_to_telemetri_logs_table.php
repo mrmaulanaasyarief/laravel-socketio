@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('telemetri_logs', function (Blueprint $table) {
-            $table->string('haversine')->after('longitude')->nullable();
+            $table->string('haversine')->after('long')->nullable();
         });
     }
 

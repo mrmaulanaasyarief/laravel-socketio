@@ -3,6 +3,7 @@
 use App\Events\MessageCreated;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\CenterPointController;
+use App\Http\Controllers\FlightCodeController;
 use App\Http\Controllers\GardenProfileController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfileController;
@@ -57,9 +58,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/map',[MapController::class,'index'])->name('map.index');
 
+    Route::get('/telemetri-log/data',[TelemetriLogController::class,'data'])->name('telemetri-log.data');
+
     Route::get('/garden-profile',[GardenProfileController::class,'index'])->name('garden-profile.index');
 
-    Route::get('/telemetri-log/data',[TelemetriLogController::class,'data'])->name('telemetri-log.data');
+    Route::get('/flight-code/data',[FlightCodeController::class,'data'])->name('flight-code.data');
+    Route::post('/flight-code/{flight_code}/select',[FlightCodeController::class,'select'])->name('flight-code.select');
+    Route::post('/flight-code/{flight_code_id}/select-view',[FlightCodeController::class,'select_view'])->name('flight-code.select-view');
+    Route::resource('/flight-code', FlightCodeController::class);
 
     Route::prefix('setting')->group(function () {
         Route::get('/', [AppController::class, 'index'])->name('setting.index');

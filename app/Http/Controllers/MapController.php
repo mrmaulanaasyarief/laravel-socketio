@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CenterPoint;
+use App\Models\FlightCode;
 use App\Models\GardenProfile;
 use App\Models\TelemetriLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class MapController extends Controller
 {
@@ -14,15 +16,28 @@ class MapController extends Controller
      */
     public function index()
     {
-        // $lat = -7.174978655899331;
-        // $long = 107.3673811554909;
+        $selectedFlightCode = Session::get('selectedFlightCode');
 
         $centerPoint = CenterPoint::get()->first();
-        $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
-        $telemetriLog = TelemetriLog::orderBy('created_at', 'desc')->first();
         $gardenProfiles = GardenProfile::orderBy('id', 'asc')->get()->all();
-        $jarakTempuh = TelemetriLog::all()->sum('haversine');
-        $jarakAwalAkhir = $this->haversineGreatCircleDistance($telemetriLogs[0]->lat, $telemetriLogs[0]->long, $telemetriLog->lat, $telemetriLog->long);
+
+        if(empty($selectedFlightCode)){
+            $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::orderBy('created_at', 'desc')->first();
+            $jarakTempuh = TelemetriLog::all()->sum('haversine');
+        }else{
+            $telemetriLogs = TelemetriLog::where('flight_code_id', $selectedFlightCode)->orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::where('flight_code_id', $selectedFlightCode)->orderBy('created_at', 'desc')->first();
+            $jarakTempuh = TelemetriLog::where('flight_code_id', $selectedFlightCode)->sum('haversine');
+        }
+
+        if(count($telemetriLogs) != 0){
+            $jarakAwalAkhir = $this->haversineGreatCircleDistance($telemetriLogs[0]->lat, $telemetriLogs[0]->long, $telemetriLog->lat, $telemetriLog->long);
+        }else{
+            $jarakAwalAkhir = [];
+        }
+
+        $flightCode = FlightCode::orderBy('created_at', 'asc')->get()->all();
 
         // $trajectory = [];
         // foreach ($telemetriLogs as $key => $value) {
@@ -33,7 +48,7 @@ class MapController extends Controller
         // usort($trajectory, fn($a, $b) => $a['haversine'] <=> $b['haversine']);
         // dd($trajectory);
 
-        return view('map.index', compact('centerPoint', 'telemetriLogs', 'gardenProfiles', 'jarakTempuh', 'jarakAwalAkhir'));
+        return view('map.index', compact('centerPoint', 'telemetriLogs', 'gardenProfiles', 'jarakTempuh', 'jarakAwalAkhir', 'flightCode', 'selectedFlightCode'));
     }
 
 

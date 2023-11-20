@@ -175,10 +175,28 @@
                     </div>
 
                     <div class="basis-2/4 xl:basis-8/12 space-y-2 grid grid-cols-1 grid-flow-row justify-stretch">
-                        <div class="bg-slate-200 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="bg-slate-200 shadow-sm sm:rounded-lg">
                             <div class="p-4 text-gray-900">
-                                <div>
+                                <div class="relative">
                                     <div id="map" class="h-[545px] xl:h-[580px]"></div>
+                                    <div class="absolute bottom-0 right-0 z-[9999] rounded-tl-[5px] bg-slate-200 p-4">
+                                        <div class="flex items-center">
+                                            <form method="post" action="">
+                                                @csrf
+                                                <select id="flight_codes" class="inline-flex items-center w-40 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-[#0c0b8b] hover:bg-indigo-800 focus:outline-none transition ease-in-out duration-150">
+                                                    <option value="all">All</option>
+                                                    @foreach ($flightCode as $code)
+                                                        @if ($code->id == $selectedFlightCode)
+                                                            <option value="{{ $code->id }}" selected>{{ $code->flight_code }}</option>
+                                                        @else
+                                                            <option value="{{ $code->id }}">{{ $code->flight_code }}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
+                                                <x-primary-button class="hidden">{{ __('Select') }}</x-primary-button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -283,16 +301,23 @@
                                             </div>
                                             <div class="flex flex-row space-x-1.5">
                                                 @if ($telemetriLogs && end($telemetriLogs)->tegangan < 10)
-                                                    <div id="alert-battery" class="flex w-full items-center p-4 text-red-800 rounded-lg bg-red-50" role="alert">
-                                                        <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                                                        </svg>
-                                                        <span class="sr-only">Info</span>
-                                                        <div class="ml-3 text-sm font-medium">
-                                                            Low Battery
-                                                        </div>
-                                                    </div>
+                                                    @php
+                                                        $class = "flex w-full items-center p-4 text-red-800 rounded-lg bg-red-50"
+                                                    @endphp
+                                                @else
+                                                    @php
+                                                        $class = "flex w-full items-center p-4 text-red-800 rounded-lg bg-red-50 hidden"
+                                                    @endphp
                                                 @endif
+                                                <div id="alert-battery" class="{{ $class }}" role="alert">
+                                                    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                                    </svg>
+                                                    <span class="sr-only">Info</span>
+                                                    <div class="ml-3 text-sm font-medium">
+                                                        Low Battery
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
@@ -532,7 +557,9 @@
 
             map.attributionControl.setPrefix(false);
 
-            var markersLayer = new L.markerClusterGroup();
+            var markersLayer = new L.markerClusterGroup({
+                maxClusterRadius: 40
+            });
 
             // looping variabel datas utuk menampilkan data marker
             var datas = []
@@ -585,7 +612,7 @@
                     latlngs[idx].push([{{ $coor['lat'] }}, {{ $coor['lng'] }}]);
                 @endforeach
 
-                polygon = L.polygon(latlngs[idx], {color: 'red'}).bindPopup("<div class='my-2'><strong>Nama: </strong> <br>"+'{{ $gardenProfile->name }}'+"</div>").addTo(map);
+                polygon = L.polygon(latlngs[idx], {color: 'green'}).bindPopup("<div class='my-2'><strong>Nama: </strong> <br>"+'{{ $gardenProfile->name }}'+"</div>").addTo(map);
             @endforeach
 
             for (i in datas) {
@@ -619,7 +646,7 @@
             // listener/subscribe untuk pusher
             window.Echo.channel('messages').listen('MessageCreated', (event) => {
                 console.log("Berhasil Listen ke Pusher");
-                console.log(event.message.telemetriLog);
+                console.log(event.message.selectedFlightCode);
                 loc.push([event.message.telemetriLog.lat, event.message.telemetriLog.long]);
 
                 marker = new L.Marker(new L.latLng([event.message.telemetriLog.lat, event.message.telemetriLog.long]), {
@@ -686,6 +713,12 @@
                 panel.dataset.rotateY = event.message.telemetriLog.yaw;
                 panel.dataset.rotateZ = event.message.telemetriLog.roll;
                 updatePanelTransform();
+            });
+
+            $('#flight_codes').on('change', function(e){
+                var select = $(this), form = select.closest('form');
+                form.attr('action', 'flight-code/' + select.val() + '/select-view');
+                form.submit();
             });
         });
     </script>
