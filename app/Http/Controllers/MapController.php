@@ -39,15 +39,6 @@ class MapController extends Controller
 
         $flightCode = FlightCode::orderBy('created_at', 'asc')->get()->all();
 
-        // $trajectory = [];
-        // foreach ($telemetriLogs as $key => $value) {
-        //     $jarak = $this->haversineGreatCircleDistance($lat, $long, $value->lat, $value->long);
-        //     $trajectory[] = ["telemetriLog" => $value, "haversine" => $jarak];
-        // }
-
-        // usort($trajectory, fn($a, $b) => $a['haversine'] <=> $b['haversine']);
-        // dd($trajectory);
-
         return view('map.index', compact('centerPoint', 'telemetriLogs', 'gardenProfiles', 'jarakTempuh', 'jarakAwalAkhir', 'flightCode', 'selectedFlightCode'));
     }
 

@@ -85,15 +85,13 @@ class TelemetriLogController extends Controller
             $telemetriLog = TelemetriLog::create($request->all());
         }
 
-        if(!empty($selectedFlightCodeSession) && $selectedFlightCodeSession == $selectedFlightCode){
-            MessageCreated::dispatch([
-                'telemetriLog' => $telemetriLog,
-                'totalWaktu' => $totalWaktu,
-                'jarakTempuh' => TelemetriLog::where('flight_code_id', $selectedFlightCodeSession)->sum('haversine'),
-                'jarakAwalAkhir' => $jarakAwalAkhir,
-                'selectedFlightCode' => $selectedFlightCode
-            ]);
-        }
+        MessageCreated::dispatch([
+            'telemetriLog' => $telemetriLog,
+            'totalWaktu' => $totalWaktu,
+            'jarakTempuh' => TelemetriLog::where('flight_code_id', $selectedFlightCodeSession)->sum('haversine'),
+            'jarakAwalAkhir' => $jarakAwalAkhir,
+            'selectedFlightCode' => $selectedFlightCode
+        ]);
 
         return response()->json($telemetriLog, 201);
     }
@@ -104,6 +102,16 @@ class TelemetriLogController extends Controller
     public function show(TelemetriLog $telemetriLog)
     {
         return $telemetriLog;
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function selected()
+    {
+        $selectedFlightCode = FlightCode::where('selected', 1)->first();
+
+        return response()->json($selectedFlightCode);
     }
 
     /**

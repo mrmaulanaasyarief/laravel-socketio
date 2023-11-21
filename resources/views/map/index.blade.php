@@ -568,11 +568,10 @@
             var loc = [];
             @foreach($telemetriLogs as $telemetriLog )
                 //datas untuk marker
-                datas.push(
-                    {"loc": ['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}'],
-                    "klasifikasi": '{{ $telemetriLog->klasifikasi }}',
-                    "persentase": 'kosong'}
-                );
+                datas.push({
+                    "loc": ['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}'],
+                    "klasifikasi": '{{ $telemetriLog->klasifikasi }}'
+                });
                 loc.push(['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}']);
                 altmeter.value = {{ $telemetriLog->alt ? $telemetriLog->alt : 0}}/10;
                 gauge.value = {{ $telemetriLog->sog ? $telemetriLog->sog : 0 }};
@@ -618,16 +617,13 @@
             for (i in datas) {
                 var title = datas[i].title,
                     location = datas[i].loc,
-                    klasifikasi = datas[i].klasifikasi,
-                    persentase = datas[i].persentase,
+                    klasifikasi = datas[i].klasifikasi
                     marker = new L.Marker(new L.latLng(location), {
                         icon: (klasifikasi == 1) ? greenIcon : redIcon,
-                        klasifikasi: klasifikasi,
-                        persentase: persentase
+                        klasifikasi: klasifikasi
                     }).bindPopup(
                         "<div class='my-2'><strong>Koordinat:</strong> <br>"+location+"</div>"+
-                        "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+klasifikasi+"</div>"+
-                        "<div class='my-2'><strong>Persentase:</strong> <br>"+persentase+"</div>"
+                        "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+klasifikasi+"</div>"
                     );
                 if (klasifikasi == 1) {
                     markersLayer.addLayer(marker);
@@ -645,74 +641,72 @@
 
             // listener/subscribe untuk pusher
             window.Echo.channel('messages').listen('MessageCreated', (event) => {
+
                 console.log("Berhasil Listen ke Pusher");
-                console.log(event.message.selectedFlightCode);
-                loc.push([event.message.telemetriLog.lat, event.message.telemetriLog.long]);
+                if(event.message.selectedFlightCode == {{ $selectedFlightCode }}){
+                    loc.push([event.message.telemetriLog.lat, event.message.telemetriLog.long]);
 
-                marker = new L.Marker(new L.latLng([event.message.telemetriLog.lat, event.message.telemetriLog.long]), {
-                    icon: (event.message.telemetriLog.klasifikasi == 1) ? greenIcon : redIcon,
-                    klasifikasi: event.message.telemetriLog.klasifikasi,
-                    persentase: event.message.telemetriLog.persentase
-                }).bindPopup(
-                    "<div class='my-2'><strong>Koordinat:</strong> <br>"+[event.message.telemetriLog.lat, event.message.telemetriLog.long]+"</div>"+
-                    "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+event.message.telemetriLog.klasifikasi+"</div>"+
-                    "<div class='my-2'><strong>Persentase:</strong> <br>"+event.message.telemetriLog.persentase+"</div>"
-                );
+                    marker = new L.Marker(new L.latLng([event.message.telemetriLog.lat, event.message.telemetriLog.long]), {
+                        icon: (event.message.telemetriLog.klasifikasi == 1) ? greenIcon : redIcon,
+                        klasifikasi: event.message.telemetriLog.klasifikasi
+                    }).bindPopup(
+                        "<div class='my-2'><strong>Koordinat:</strong> <br>"+[event.message.telemetriLog.lat, event.message.telemetriLog.long]+"</div>"+
+                        "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+event.message.telemetriLog.klasifikasi+"</div>"
+                    );
 
-                if (event.message.telemetriLog.klasifikasi == 1) {
-                    markersLayer.addLayer(marker);
+                    if (event.message.telemetriLog.klasifikasi == 1) {
+                        markersLayer.addLayer(marker);
+                    }
+                    var polyline = L.polyline(loc, {color: 'red'}).addTo(map);
+                    // zoom the map to the polyline
+                    map.fitBounds(polyline.getBounds());
+
+                    // set meteran
+                    altmeter.value = parseFloat(event.message.telemetriLog.alt)/10;
+                    gauge.value = event.message.telemetriLog.sog;
+                    compas.value = Math.atan2(event.message.telemetriLog.my, event.message.telemetriLog.mx) * 180 / Math.PI;
+                    temperature.value = event.message.telemetriLog.suhu;
+                    humidity.value = event.message.telemetriLog.humidity;
+
+                    document.getElementById("koorAkhir").value = event.message.telemetriLog.lat+ ', '+ event.message.telemetriLog.long;
+                    document.getElementById("jarakTempuh").value = event.message.jarakTempuh + ' m';
+                    document.getElementById("jarakAwalAkhir").value = event.message.jarakAwalAkhir + ' m';
+                    document.getElementById("waktuAkhir").value = event.message.telemetriLog.tPayload + ' WIB';
+                    document.getElementById("totalWaktu").value = event.message.totalWaktu + ' s';
+                    document.getElementById("teganganAkhir").value = event.message.telemetriLog.tegangan + ' V';
+                    document.getElementById("arusAkhir").value = event.message.telemetriLog.arus + ' mA';
+                    document.getElementById("dayaAkhir").value = event.message.telemetriLog.daya + ' mW';
+
+                    if(event.message.telemetriLog.tegangan < 10){
+                        document.getElementById("alert-battery").classList.remove("hidden");
+                    }else{
+                        document.getElementById("alert-battery").classList.add("hidden");
+                    }
+
+                    document.getElementById("roll").value = event.message.telemetriLog.roll + '°';
+                    document.getElementById("roll-info").innerText = event.message.telemetriLog.roll > 0 ? "miring kanan" : "miring kiri";
+                    document.getElementById("pitch").value = event.message.telemetriLog.pitch + '°';
+                    document.getElementById("pitch-info").innerText = event.message.telemetriLog.pitch > 0 ? "menjulang" : "menukik";
+                    document.getElementById("yaw").value = event.message.telemetriLog.yaw + '°';
+                    document.getElementById("yaw-info").innerText = event.message.telemetriLog.yaw > 0 ? "putar kanan" : "putar kiri";
+
+                    document.getElementById("accelerationX").value = event.message.telemetriLog.ax + ' g';
+                    document.getElementById("accelerationY").value = event.message.telemetriLog.ay + ' g';
+                    document.getElementById("accelerationZ").value = event.message.telemetriLog.az + ' g';
+                    document.getElementById("gyroscopeX").value = event.message.telemetriLog.gx + '°/s';
+                    document.getElementById("gyroscopeY").value = event.message.telemetriLog.gy + '°/s';
+                    document.getElementById("gyroscopeZ").value = event.message.telemetriLog.gz + '°/s';
+                    document.getElementById("magnetometerX").value = event.message.telemetriLog.mx + ' n/T';
+                    document.getElementById("magnetometerY").value = event.message.telemetriLog.my + ' n/T';
+                    document.getElementById("magnetometerZ").value = event.message.telemetriLog.mz + ' n/T';
+
+                    $('#dataTelemetriLogs').DataTable().ajax.reload();
+
+                    panel.dataset.rotateX = event.message.telemetriLog.pitch;
+                    panel.dataset.rotateY = event.message.telemetriLog.yaw;
+                    panel.dataset.rotateZ = event.message.telemetriLog.roll;
+                    updatePanelTransform();
                 }
-                var polyline = L.polyline(loc, {color: 'red'}).addTo(map);
-                // zoom the map to the polyline
-                map.fitBounds(polyline.getBounds());
-
-                // set meteran
-                altmeter.value = parseFloat(event.message.telemetriLog.alt)/10;
-                gauge.value = event.message.telemetriLog.sog;
-                compas.value = Math.atan2(event.message.telemetriLog.my, event.message.telemetriLog.mx) * 180 / Math.PI;
-                temperature.value = event.message.telemetriLog.suhu;
-                humidity.value = event.message.telemetriLog.humidity;
-
-                document.getElementById("koorAkhir").value = event.message.telemetriLog.lat+ ', '+ event.message.telemetriLog.long;
-                document.getElementById("jarakTempuh").value = event.message.jarakTempuh + ' m';
-                document.getElementById("jarakAwalAkhir").value = event.message.jarakAwalAkhir + ' m';
-                document.getElementById("waktuAkhir").value = event.message.telemetriLog.tPayload + ' WIB';
-                document.getElementById("totalWaktu").value = event.message.totalWaktu + ' s';
-                document.getElementById("teganganAkhir").value = event.message.telemetriLog.tegangan + ' V';
-                document.getElementById("arusAkhir").value = event.message.telemetriLog.arus + ' mA';
-                document.getElementById("dayaAkhir").value = event.message.telemetriLog.daya + ' mW';
-
-                if(event.message.telemetriLog.tegangan < 10){
-                    console.log("kurang")
-                    document.getElementById("alert-battery").classList.remove("hidden");
-                }else{
-                    console.log("lebih")
-                    document.getElementById("alert-battery").classList.add("hidden");
-                }
-
-                document.getElementById("roll").value = event.message.telemetriLog.roll + '°';
-                document.getElementById("roll-info").innerText = event.message.telemetriLog.roll > 0 ? "miring kanan" : "miring kiri";
-                document.getElementById("pitch").value = event.message.telemetriLog.pitch + '°';
-                document.getElementById("pitch-info").innerText = event.message.telemetriLog.pitch > 0 ? "menjulang" : "menukik";
-                document.getElementById("yaw").value = event.message.telemetriLog.yaw + '°';
-                document.getElementById("yaw-info").innerText = event.message.telemetriLog.yaw > 0 ? "putar kanan" : "putar kiri";
-
-                document.getElementById("accelerationX").value = event.message.telemetriLog.ax + ' g';
-                document.getElementById("accelerationY").value = event.message.telemetriLog.ay + ' g';
-                document.getElementById("accelerationZ").value = event.message.telemetriLog.az + ' g';
-                document.getElementById("gyroscopeX").value = event.message.telemetriLog.gx + '°/s';
-                document.getElementById("gyroscopeY").value = event.message.telemetriLog.gy + '°/s';
-                document.getElementById("gyroscopeZ").value = event.message.telemetriLog.gz + '°/s';
-                document.getElementById("magnetometerX").value = event.message.telemetriLog.mx + ' n/T';
-                document.getElementById("magnetometerY").value = event.message.telemetriLog.my + ' n/T';
-                document.getElementById("magnetometerZ").value = event.message.telemetriLog.mz + ' n/T';
-
-                $('#dataTelemetriLogs').DataTable().ajax.reload();
-
-                panel.dataset.rotateX = event.message.telemetriLog.pitch;
-                panel.dataset.rotateY = event.message.telemetriLog.yaw;
-                panel.dataset.rotateZ = event.message.telemetriLog.roll;
-                updatePanelTransform();
             });
 
             $('#flight_codes').on('change', function(e){

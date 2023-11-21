@@ -47,6 +47,7 @@
                                 <div>
                                     <form method="post" action="">
                                         @csrf
+                                        <x-input-label for="flight_codes" :value="__('Active Flight Code')" />
                                         <select id="flight_codes" class="inline-flex items-center w-56 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-[#0c0b8b] hover:bg-indigo-800 focus:outline-none transition ease-in-out duration-150">
                                             <option>Select Active Flight Code</option>
                                             @foreach ($flightCode as $code)
