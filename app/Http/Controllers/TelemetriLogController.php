@@ -9,6 +9,7 @@ use App\Models\FlightCode;
 use App\Models\GardenProfile;
 use App\Models\TelemetriLog;
 use Illuminate\Support\Facades\Session;
+use Yajra\DataTables\DataTables;
 
 class TelemetriLogController extends Controller
 {
@@ -141,8 +142,15 @@ class TelemetriLogController extends Controller
     {
         $telemetriLogs = TelemetriLog::orderBy('created_at', 'DESC');
 
-        return datatables()->of($telemetriLogs)
+        return DataTables::of($telemetriLogs)
             ->addIndexColumn()
+            ->editColumn('flight_code', function($telemetriLog){
+                return $telemetriLog->flight_code->flight_code;
+            })
+            ->editColumn('garden_profile', function($telemetriLog){
+
+                return !empty($telemetriLog->garden_profile) ? $telemetriLog->garden_profile->name : '-';
+            })
             ->toJson();
     }
 

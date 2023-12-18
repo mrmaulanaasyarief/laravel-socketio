@@ -431,6 +431,7 @@
                                         <thead>
                                             <tr>
                                                 <th>No.</th>
+                                                <th>Flight Code</th>
                                                 <th>Time Payload</th>
                                                 <th>Latitude</th>
                                                 <th>Longitude</th>
@@ -441,6 +442,7 @@
                                                 <th>Tegangan</th>
                                                 <th>Daya</th>
                                                 <th>Klasifikasi</th>
+                                                <th>Kebun</th>
                                                 <th>AX</th>
                                                 <th>AY</th>
                                                 <th>AZ</th>
@@ -570,7 +572,8 @@
                 //datas untuk marker
                 datas.push({
                     "loc": ['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}'],
-                    "klasifikasi": '{{ $telemetriLog->klasifikasi }}'
+                    "klasifikasi": '{{ $telemetriLog->klasifikasi }}',
+                    "garden_profile": '{{ $telemetriLog->garden_profile ? $telemetriLog->garden_profile->name : '-' }}'
                 });
                 loc.push(['{{ $telemetriLog->lat }}','{{ $telemetriLog->long }}']);
                 altmeter.value = {{ $telemetriLog->alt ? $telemetriLog->alt : 0}}/10;
@@ -618,12 +621,15 @@
                 var title = datas[i].title,
                     location = datas[i].loc,
                     klasifikasi = datas[i].klasifikasi
+                    garden_profile = datas[i].garden_profile
                     marker = new L.Marker(new L.latLng(location), {
                         icon: (klasifikasi == 1) ? greenIcon : redIcon,
-                        klasifikasi: klasifikasi
+                        klasifikasi: klasifikasi,
+                        garden_profile: garden_profile
                     }).bindPopup(
                         "<div class='my-2'><strong>Koordinat:</strong> <br>"+location+"</div>"+
-                        "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+klasifikasi+"</div>"
+                        "<div class='my-2'><strong>Klasifikasi:</strong> <br>"+klasifikasi+"</div>"+
+                        "<div class='my-2'><strong>Kebun:</strong> <br>"+garden_profile+"</div>"
                     );
                 if (klasifikasi == 1) {
                     markersLayer.addLayer(marker);
@@ -643,7 +649,7 @@
             window.Echo.channel('messages').listen('MessageCreated', (event) => {
 
                 console.log("Berhasil Listen ke Pusher");
-                if(event.message.selectedFlightCode == {{ $selectedFlightCode }}){
+                if(event.message.selectedFlightCode == {{ !empty($selectedFlightCode) ? $selectedFlightCode : 0}}){
                     loc.push([event.message.telemetriLog.lat, event.message.telemetriLog.long]);
 
                     marker = new L.Marker(new L.latLng([event.message.telemetriLog.lat, event.message.telemetriLog.long]), {

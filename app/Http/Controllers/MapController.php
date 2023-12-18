@@ -22,12 +22,12 @@ class MapController extends Controller
         $gardenProfiles = GardenProfile::orderBy('id', 'asc')->get()->all();
 
         if(empty($selectedFlightCode)){
-            $telemetriLogs = TelemetriLog::orderBy('created_at', 'asc')->get()->all();
-            $telemetriLog = TelemetriLog::orderBy('created_at', 'desc')->first();
+            $telemetriLogs = TelemetriLog::with(['flight_code', 'garden_profile'])->orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::with(['flight_code', 'garden_profile'])->orderBy('created_at', 'desc')->first();
             $jarakTempuh = TelemetriLog::all()->sum('haversine');
         }else{
-            $telemetriLogs = TelemetriLog::where('flight_code_id', $selectedFlightCode)->orderBy('created_at', 'asc')->get()->all();
-            $telemetriLog = TelemetriLog::where('flight_code_id', $selectedFlightCode)->orderBy('created_at', 'desc')->first();
+            $telemetriLogs = TelemetriLog::where('flight_code_id', $selectedFlightCode)->with(['flight_code', 'garden_profile'])->orderBy('created_at', 'asc')->get()->all();
+            $telemetriLog = TelemetriLog::where('flight_code_id', $selectedFlightCode)->with(['flight_code', 'garden_profile'])->orderBy('created_at', 'desc')->first();
             $jarakTempuh = TelemetriLog::where('flight_code_id', $selectedFlightCode)->sum('haversine');
         }
 
